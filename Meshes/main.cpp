@@ -593,6 +593,7 @@ public:
     virtual void UploadEyePosition(vec3 wEye) { }
     virtual void UploadSamplerCubeID() { }
     virtual void UploadViewDirMatrix(mat4& viewDirMatrix) { }
+    virtual void UploadEnvironmentIndicator(int indicator) {}
 };
 
 class MeshShader : public Shader
@@ -632,6 +633,7 @@ public:
         uniform vec3 La, Le;
         uniform vec3 ka, kd, ks;
         uniform float shininess;
+        uniform bool envIndicator;
         in vec2 texCoord;
         in vec3 worldNormal;
         in vec3 worldView;
@@ -644,12 +646,18 @@ public:
             vec3 L = normalize(worldLight);
             vec3 H = normalize(V + L);
             vec3 texel = texture(samplerUnit, texCoord).xyz;
-            vec3 R = N * dot(N, V) * 2.0 - V;
-            vec3 texel2 = texture(environmentMap, R).xyz;
-            vec3 color =
-            La * ka +
-            (Le * kd * texel * max(0.0, dot(L, N))) * 0.5 + texel2 * 0.5 +
-            Le * ks * pow(max(0.0, dot(H, N)), shininess);
+            
+            vec3 color = La * ka + Le * kd * texel * max(0.0, dot(L, N)) + Le * ks * pow(max(0.0, dot(H, N)), shininess);
+            
+            if (envIndicator) {
+                vec3 R = N * dot(N, V) * 2.0 - V;
+                vec3 texel2 = texture(environmentMap, R).xyz;
+                color =
+                La * ka +
+                (Le * kd * texel * max(0.0, dot(L, N))) * 0.5 + texel2 * 0.5 +
+                Le * ks * pow(max(0.0, dot(H, N)), shininess);
+            }
+            
             fragmentColor = vec4(color, 1);
         }
         )";
@@ -760,6 +768,12 @@ public:
         int location = glGetUniformLocation(shaderProgram, "worldEyePosition");
         if (location >= 0) glUniform3fv(location, 1, &wEye.x);
         else printf("uniform eye position cannot be set\n");
+    }
+    
+    void UploadEnvironmentIndicator(int indicator) {
+        int location = glGetUniformLocation(shaderProgram, "envIndicator");
+        if (location >= 0) glUniform1i (location, indicator);
+        else printf("environment indicator cannot be set\n");
     }
 
 };
@@ -1175,16 +1189,18 @@ public:
     
     void UploadAttributes()
     {
-        if(texture)
-        {
+        if(texture){
             shader->UploadSamplerID();
             texture->Bind();
             shader->UploadMaterialAttributes(ka, kd, ks, shininess);
         }
-        if(environmentMap)
-        {
+        if(environmentMap){
             shader->UploadSamplerCubeID();
             environmentMap->Bind();
+            shader->UploadEnvironmentIndicator(1);
+        }
+        else {
+            shader->UploadEnvironmentIndicator(0);
         }
     }
 };
@@ -1237,6 +1253,10 @@ class Camera {
     vec3  wEye, wLookat, wVup;
     float fov, asp, fp, bp;
     vec3 velocity;
+    /**float force = 1;
+    float speed = 0.6;
+    float invMass = 0.3;
+    float acceleration;**/
     
 public:
     Camera()
@@ -1253,7 +1273,11 @@ public:
         velocity = (wLookat - wEye).normalize() * 5;
     }
     
-    void MoveHelicam(vec3 pos, float orient) {
+    void MoveHelicam(vec3 pos, float orient, float dt) {
+        //force = force + 4*dt;
+        //acceleration = force*invMass;
+        //speed = speed - acceleration * dt;
+        
         float radians = orient * (M_PI/180);
         wEye = pos + vec3(2*cosf(radians), 2, 2*sinf(radians));
         wLookat = pos + vec3(0, 1.5, 0);
@@ -1649,13 +1673,13 @@ public:
         objects.push_back(object);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
-        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[1], environmentMap));
+        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[1]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.obj"));
         meshes.push_back(new Mesh(geometries[1], materials[1]));
         Object* object2 = new BackgroundObject(meshes[1], vec3(-0.5, -0.5, -0.1), vec3(0.015, 0.015, 0.015), -60.0);
         objects.push_back(object2);
         
-        //environment = new Environment(envShader, environmentMap);
+        environment = new Environment(envShader, environmentMap);
         
 
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
@@ -1691,7 +1715,7 @@ public:
         for(int i = 0; i < objects.size(); i++){
             objects[i]->Draw();
         }
-        //environment->Draw();
+        environment->Draw();
         
     }
     
@@ -1754,7 +1778,7 @@ void onIdle( ) {
     double dt = t - lastTime;
     lastTime = t;
     
-    camera.MoveHelicam(scene.GetAvatar()->GetPosition(), scene.GetAvatar()->GetOrientation());
+    camera.MoveHelicam(scene.GetAvatar()->GetPosition(), scene.GetAvatar()->GetOrientation(), dt);
     //camera.Move(dt);
     scene.Move(dt);
     
