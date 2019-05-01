@@ -1193,14 +1193,12 @@ public:
             shader->UploadSamplerID();
             texture->Bind();
             shader->UploadMaterialAttributes(ka, kd, ks, shininess);
+            shader->UploadEnvironmentIndicator(0);
         }
         if(environmentMap){
             shader->UploadSamplerCubeID();
             environmentMap->Bind();
             shader->UploadEnvironmentIndicator(1);
-        }
-        else {
-            shader->UploadEnvironmentIndicator(0);
         }
     }
 };
@@ -1679,15 +1677,22 @@ public:
         Object* object2 = new BackgroundObject(meshes[1], vec3(-0.5, -0.5, -0.1), vec3(0.015, 0.015, 0.015), -60.0);
         objects.push_back(object2);
         
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
+        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[1]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.obj"));
+        meshes.push_back(new Mesh(geometries[2], materials[2]));
+        Object* object3 = new BackgroundObject(meshes[2], vec3(-1, -0.8, 4), vec3(0.03, 0.03, 0.03), 120.0);
+        objects.push_back(object3);
+        
         environment = new Environment(envShader, environmentMap);
         
 
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
         materials.push_back(new Material(infiniteShader, ka, kd, ks, shininess, textures[2]));
         geometries.push_back(new InfiniteTexturedQuad());
-        meshes.push_back(new Mesh(geometries[2], materials[2]));
-        Object* object3 = new BackgroundObject(meshes[2], vec3(0, -1, 0));
-        objects.push_back(object3);
+        meshes.push_back(new Mesh(geometries[3], materials[3]));
+        Object* object4 = new BackgroundObject(meshes[3], vec3(0, -1, 0));
+        objects.push_back(object4);
     }
     
     ~Scene()
