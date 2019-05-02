@@ -30,23 +30,11 @@
 		4C124F4F224E24AF006CF84A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		4C124F57224E24BF006CF84A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		4C124F59224E24C2006CF84A /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
-		4C124F5B224E257D006CF84A /* tree.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tree.obj; sourceTree = "<group>"; };
-		4C124F5C224E257D006CF84A /* tigger.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tigger.obj; sourceTree = "<group>"; };
-		4C124F5D224E257D006CF84A /* tree.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tree.png; sourceTree = "<group>"; };
-		4C124F5E224E257D006CF84A /* tigger.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tigger.png; sourceTree = "<group>"; };
 		4C124F5F224E2598006CF84A /* stb_image.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stb_image.c; sourceTree = "<group>"; };
-		4CA0F17D22730448006CB85C /* negy.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negy.jpg; sourceTree = "<group>"; };
-		4CA0F17E22730448006CB85C /* posz512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posz512.jpg; sourceTree = "<group>"; };
-		4CA0F17F22730448006CB85C /* negy512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negy512.jpg; sourceTree = "<group>"; };
-		4CA0F18022730448006CB85C /* posx512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posx512.jpg; sourceTree = "<group>"; };
-		4CA0F18122730448006CB85C /* posx.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posx.jpg; sourceTree = "<group>"; };
-		4CA0F18222730449006CB85C /* negx512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negx512.jpg; sourceTree = "<group>"; };
-		4CA0F18322730449006CB85C /* posy.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posy.jpg; sourceTree = "<group>"; };
-		4CA0F18422730449006CB85C /* posy512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posy512.jpg; sourceTree = "<group>"; };
-		4CA0F18522730449006CB85C /* negx.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negx.jpg; sourceTree = "<group>"; };
-		4CA0F18622730449006CB85C /* negz512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negz512.jpg; sourceTree = "<group>"; };
-		4CA0F18722730449006CB85C /* posz.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posz.jpg; sourceTree = "<group>"; };
-		4CA0F18822730449006CB85C /* negz.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negz.jpg; sourceTree = "<group>"; };
+		4C404248227AF37700543BF6 /* balloon */ = {isa = PBXFileReference; lastKnownFileType = folder; path = balloon; sourceTree = "<group>"; };
+		4C404249227AF5CF00543BF6 /* environment */ = {isa = PBXFileReference; lastKnownFileType = folder; path = environment; sourceTree = "<group>"; };
+		4C40424A227AF5DD00543BF6 /* tree */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tree; sourceTree = "<group>"; };
+		4C40424B227AF5E500543BF6 /* tigger */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tigger; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,24 +70,12 @@
 		4C124F4E224E24AE006CF84A /* Meshes */ = {
 			isa = PBXGroup;
 			children = (
-				4CA0F18522730449006CB85C /* negx.jpg */,
-				4CA0F18222730449006CB85C /* negx512.jpg */,
-				4CA0F17D22730448006CB85C /* negy.jpg */,
-				4CA0F17F22730448006CB85C /* negy512.jpg */,
-				4CA0F18822730449006CB85C /* negz.jpg */,
-				4CA0F18622730449006CB85C /* negz512.jpg */,
-				4CA0F18122730448006CB85C /* posx.jpg */,
-				4CA0F18022730448006CB85C /* posx512.jpg */,
-				4CA0F18322730449006CB85C /* posy.jpg */,
-				4CA0F18422730449006CB85C /* posy512.jpg */,
-				4CA0F18722730449006CB85C /* posz.jpg */,
-				4CA0F17E22730448006CB85C /* posz512.jpg */,
+				4C40424B227AF5E500543BF6 /* tigger */,
+				4C40424A227AF5DD00543BF6 /* tree */,
+				4C404249227AF5CF00543BF6 /* environment */,
+				4C404248227AF37700543BF6 /* balloon */,
 				4C124F5F224E2598006CF84A /* stb_image.c */,
 				4C124F4F224E24AF006CF84A /* main.cpp */,
-				4C124F5C224E257D006CF84A /* tigger.obj */,
-				4C124F5E224E257D006CF84A /* tigger.png */,
-				4C124F5B224E257D006CF84A /* tree.obj */,
-				4C124F5D224E257D006CF84A /* tree.png */,
 			);
 			path = Meshes;
 			sourceTree = "<group>";

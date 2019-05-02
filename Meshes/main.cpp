@@ -1800,12 +1800,12 @@ public:
         infiniteShader = new InfiniteQuadShader();
         shadowShader = new ShadowShader();
         
-        environmentMap = new TextureCube("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/posx512.jpg",
-                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/negx512.jpg",
-                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/posy512.jpg",
-                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/negy512.jpg",
-                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/posz512.jpg",
-                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/negz512.jpg");
+        environmentMap = new TextureCube("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/environment/posx512.jpg",
+                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/environment/negx512.jpg",
+                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/environment/posy512.jpg",
+                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/environment/negy512.jpg",
+                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/environment/posz512.jpg",
+                        "/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/environment/negz512.jpg");
         
         envShader = new EnvironmentShader();
         
@@ -1815,36 +1815,42 @@ public:
         float shininess = 50;
 
         
-        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger.png"));
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.png"));
         materials.push_back(new Material(reflectiveShader, ka, kd, ks, shininess, textures[0], environmentMap));
-        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger.obj"));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.obj"));
         meshes.push_back(new Mesh(geometries[0], materials[0]));
         Object* object = new AvatarObject(meshes[0], vec3(0.0, -1.0, 0.0), vec3(0.05, 0.05, 0.05), -60.0);
         objects.push_back(object);
         
-        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
         materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[1]));
-        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.obj"));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.obj"));
         meshes.push_back(new Mesh(geometries[1], materials[1]));
         Object* object2 = new BackgroundObject(meshes[1], vec3(-0.5, -0.5, -0.1), vec3(0.015, 0.015, 0.015), -60.0);
         objects.push_back(object2);
         
-        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
-        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[1]));
-        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.obj"));
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
+        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[2]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.obj"));
         meshes.push_back(new Mesh(geometries[2], materials[2]));
         Object* object3 = new BackgroundObject(meshes[2], vec3(-1, -0.8, 4), vec3(0.03, 0.03, 0.03), 120.0);
         objects.push_back(object3);
         
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/balloon/balloon.png"));
+        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[3]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/balloon/balloon.obj"));
+        meshes.push_back(new Mesh(geometries[3], materials[3]));
+        Object* object4 = new BackgroundObject(meshes[3], vec3(-3, 2, 7), vec3(0.1, 0.1, 0.1), 0);
+        objects.push_back(object4);
+        
         environment = new Environment(envShader, environmentMap);
         
-
-        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree.png"));
-        materials.push_back(new Material(infiniteShader, ka, kd, ks, shininess, textures[2]));
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
+        materials.push_back(new Material(infiniteShader, ka, kd, ks, shininess, textures[4]));
         geometries.push_back(new InfiniteTexturedQuad());
-        meshes.push_back(new Mesh(geometries[3], materials[3]));
-        Object* object4 = new BackgroundObject(meshes[3], vec3(0, -1, 0));
-        objects.push_back(object4);
+        meshes.push_back(new Mesh(geometries[4], materials[4]));
+        Object* object5 = new BackgroundObject(meshes[4], vec3(0, -1, 0));
+        objects.push_back(object5);
     }
     
     ~Scene()
@@ -1868,7 +1874,7 @@ public:
     {
         // last object is the ground
 
-        for(int i = 0; i < objects.size() - 1; i++){
+        for(int i = 0; i < objects.size()-1; i++){
             objects[i]->DrawShadow(shadowShader);
         }
         for(int i = 0; i < objects.size(); i++){
