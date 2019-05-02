@@ -593,7 +593,6 @@ public:
     virtual void UploadEyePosition(vec3 wEye) { }
     virtual void UploadSamplerCubeID() { }
     virtual void UploadViewDirMatrix(mat4& viewDirMatrix) { }
-    virtual void UploadEnvironmentIndicator(int indicator) {}
 };
 
 class MeshShader : public Shader
@@ -633,7 +632,6 @@ public:
         uniform vec3 La, Le;
         uniform vec3 ka, kd, ks;
         uniform float shininess;
-        uniform bool envIndicator;
         in vec2 texCoord;
         in vec3 worldNormal;
         in vec3 worldView;
@@ -648,16 +646,6 @@ public:
             vec3 texel = texture(samplerUnit, texCoord).xyz;
             
             vec3 color = La * ka + Le * kd * texel * max(0.0, dot(L, N)) + Le * ks * pow(max(0.0, dot(H, N)), shininess);
-            
-            if (envIndicator) {
-                vec3 R = N * dot(N, V) * 2.0 - V;
-                vec3 texel2 = texture(environmentMap, R).xyz;
-                color =
-                La * ka +
-                (Le * kd * texel * max(0.0, dot(L, N))) * 0.5 + texel2 * 0.5 +
-                Le * ks * pow(max(0.0, dot(H, N)), shininess);
-            }
-            
             fragmentColor = vec4(color, 1);
         }
         )";
@@ -769,15 +757,178 @@ public:
         if (location >= 0) glUniform3fv(location, 1, &wEye.x);
         else printf("uniform eye position cannot be set\n");
     }
-    
-    void UploadEnvironmentIndicator(int indicator) {
-        int location = glGetUniformLocation(shaderProgram, "envIndicator");
-        if (location >= 0) glUniform1i (location, indicator);
-        else printf("environment indicator cannot be set\n");
-    }
 
 };
 
+
+class ReflectiveShader : public Shader
+{
+public:
+    ReflectiveShader()
+    {
+        const char *vertexSource = R"(
+#version 410
+        precision highp float;
+        in vec3 vertexPosition;
+        in vec2 vertexTexCoord;
+        in vec3 vertexNormal;
+        uniform mat4 M, InvM, MVP;
+        uniform vec3 worldEyePosition;
+        uniform vec4 worldLightPosition;
+        out vec2 texCoord;
+        out vec3 worldNormal;
+        out vec3 worldView;
+        out vec3 worldLight;
+        
+        void main() {
+            texCoord = vertexTexCoord;
+            vec4 worldPosition = vec4(vertexPosition, 1) * M;
+            worldLight  = worldLightPosition.xyz * worldPosition.w - worldPosition.xyz * worldLightPosition.w;
+            worldView = worldEyePosition - worldPosition.xyz;
+            worldNormal = (InvM * vec4(vertexNormal, 0.0)).xyz;
+            gl_Position = vec4(vertexPosition, 1) * MVP;
+        }
+        )";
+        
+        const char *fragmentSource = R"(
+#version 410
+        precision highp float;
+        uniform sampler2D samplerUnit;
+        uniform samplerCube environmentMap;
+        uniform vec3 La, Le;
+        uniform vec3 ka, kd, ks;
+        uniform float shininess;
+        in vec2 texCoord;
+        in vec3 worldNormal;
+        in vec3 worldView;
+        in vec3 worldLight;
+        out vec4 fragmentColor;
+        
+        void main() {
+            vec3 N = normalize(worldNormal);
+            vec3 V = normalize(worldView);
+            vec3 L = normalize(worldLight);
+            vec3 H = normalize(V + L);
+            vec3 texel = texture(samplerUnit, texCoord).xyz;
+            vec3 R = N * dot(N, V) * 2.0 - V;
+            vec3 texel2 = texture(environmentMap, R).xyz;
+            vec3 color =
+            La * ka +
+            (Le * kd * texel * max(0.0, dot(L, N))) * 0.5 + texel2 * 0.5 +
+            Le * ks * pow(max(0.0, dot(H, N)), shininess);
+            fragmentColor = vec4(color, 1);
+        }
+        )";
+        
+        unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        if (!vertexShader) { printf("Error in vertex shader creation\n"); exit(1); }
+        
+        glShaderSource(vertexShader, 1, &vertexSource, NULL);
+        glCompileShader(vertexShader);
+        checkShader(vertexShader, "Vertex shader error");
+        
+        unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        if (!fragmentShader) { printf("Error in fragment shader creation\n"); exit(1); }
+        
+        glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+        glCompileShader(fragmentShader);
+        checkShader(fragmentShader, "Fragment shader error");
+        
+        shaderProgram = glCreateProgram();
+        if (!shaderProgram) { printf("Error in shader program creation\n"); exit(1); }
+        
+        glAttachShader(shaderProgram, vertexShader);
+        glAttachShader(shaderProgram, fragmentShader);
+        
+        glBindAttribLocation(shaderProgram, 0, "vertexPosition");
+        glBindAttribLocation(shaderProgram, 1, "vertexTexCoord");
+        glBindAttribLocation(shaderProgram, 2, "vertexNormal");
+        
+        glBindFragDataLocation(shaderProgram, 0, "fragmentColor");
+        
+        glLinkProgram(shaderProgram);
+        checkLinking(shaderProgram);
+    }
+    
+    void UploadSamplerID()
+    {
+        int samplerUnit = 0;
+        int location = glGetUniformLocation(shaderProgram, "samplerUnit");
+        glUniform1i(location, samplerUnit);
+        glActiveTexture(GL_TEXTURE0 + samplerUnit);
+    }
+    
+    
+    void UploadSamplerCubeID() {
+        int samplerCube = 1;
+        int location = glGetUniformLocation(shaderProgram, "environmentMap");
+        glUniform1i(location, samplerCube);
+        glActiveTexture(GL_TEXTURE0 + samplerCube);
+        
+    }
+    
+    void UploadM(mat4& M)
+    {
+        int location = glGetUniformLocation(shaderProgram, "M");
+        if (location >= 0) glUniformMatrix4fv(location, 1, GL_TRUE, M);
+        else printf("uniform M cannot be set\n");
+    }
+    
+    void UploadInvM(mat4& InvM)
+    {
+        int location = glGetUniformLocation(shaderProgram, "InvM");
+        if (location >= 0) glUniformMatrix4fv(location, 1, GL_TRUE, InvM);
+        else printf("uniform InvM cannot be set\n");
+    }
+    
+    void UploadMVP(mat4& MVP)
+    {
+        int location = glGetUniformLocation(shaderProgram, "MVP");
+        if (location >= 0) glUniformMatrix4fv(location, 1, GL_TRUE, MVP);
+        else printf("uniform MVP cannot be set\n");
+    }
+    
+    void UploadMaterialAttributes(vec3 ka, vec3 kd, vec3 ks, float shininess) {
+        
+        int location1 = glGetUniformLocation(shaderProgram, "ka");
+        if (location1 >= 0) glUniform3fv(location1, 1, &ka.x);
+        else printf("uniform ka cannot be set\n");
+        
+        int location2 = glGetUniformLocation(shaderProgram, "kd");
+        if (location2 >= 0) glUniform3fv(location2, 1, &kd.x);
+        else printf("uniform kd cannot be set\n");
+        
+        int location3 = glGetUniformLocation(shaderProgram, "ks");
+        if (location3 >= 0) glUniform3fv(location3, 1, &ks.x);
+        else printf("uniform ks cannot be set\n");
+        
+        int location4 = glGetUniformLocation(shaderProgram, "shininess");
+        if (location4 >= 0) glUniform1f(location4, shininess);
+        else printf("uniform shininess cannot be set\n");
+    }
+    
+    void UploadLightAttributes(vec3 La, vec3 Le, vec4 worldLightPosition) {
+        
+        int location1 = glGetUniformLocation(shaderProgram, "La");
+        if (location1 >= 0) glUniform3fv(location1, 1, &La.x);
+        else printf("uniform La cannot be set\n");
+        
+        int location2 = glGetUniformLocation(shaderProgram, "Le");
+        if (location2 >= 0) glUniform3fv(location2, 1, &Le.x);
+        else printf("uniform Le cannot be set\n");
+        
+        int location3 = glGetUniformLocation(shaderProgram, "worldLightPosition");
+        if (location3 >= 0) glUniform4fv(location3, 1, &worldLightPosition.v[0]);
+        else printf("uniform world light position cannot be set\n");
+    }
+    
+    void UploadEyePosition(vec3 wEye) {
+        int location = glGetUniformLocation(shaderProgram, "worldEyePosition");
+        if (location >= 0) glUniform3fv(location, 1, &wEye.x);
+        else printf("uniform eye position cannot be set\n");
+    }
+    
+};
 
 class InfiniteQuadShader : public Shader
 {
@@ -1193,12 +1344,10 @@ public:
             shader->UploadSamplerID();
             texture->Bind();
             shader->UploadMaterialAttributes(ka, kd, ks, shininess);
-            shader->UploadEnvironmentIndicator(0);
         }
         if(environmentMap){
             shader->UploadSamplerCubeID();
             environmentMap->Bind();
-            shader->UploadEnvironmentIndicator(1);
         }
     }
 };
@@ -1619,6 +1768,7 @@ public:
 class Scene
 {
     MeshShader *meshShader;
+    ReflectiveShader *reflectiveShader;
     InfiniteQuadShader *infiniteShader;
     ShadowShader *shadowShader;
     TextureCube *environmentMap;
@@ -1636,6 +1786,7 @@ public:
     Scene()
     {
         meshShader = 0;
+        reflectiveShader = 0;
         infiniteShader = 0;
         shadowShader = 0;
         environmentMap = 0;
@@ -1645,6 +1796,7 @@ public:
     void Initialize()
     {
         meshShader = new MeshShader();
+        reflectiveShader = new ReflectiveShader();
         infiniteShader = new InfiniteQuadShader();
         shadowShader = new ShadowShader();
         
@@ -1664,7 +1816,7 @@ public:
 
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger.png"));
-        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[0], environmentMap));
+        materials.push_back(new Material(reflectiveShader, ka, kd, ks, shininess, textures[0], environmentMap));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger.obj"));
         meshes.push_back(new Mesh(geometries[0], materials[0]));
         Object* object = new AvatarObject(meshes[0], vec3(0.0, -1.0, 0.0), vec3(0.05, 0.05, 0.05), -60.0);
@@ -1704,10 +1856,12 @@ public:
         for(int i = 0; i < objects.size(); i++) delete objects[i];
         
         if(meshShader) delete meshShader;
+        if(reflectiveShader) delete reflectiveShader;
         if(infiniteShader) delete infiniteShader;
         if(shadowShader) delete shadowShader;
         if(environmentMap) delete environmentMap;
         if(envShader) delete envShader;
+
     }
     
     void Draw()

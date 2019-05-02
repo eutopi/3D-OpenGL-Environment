@@ -35,7 +35,6 @@
 		4C124F5D224E257D006CF84A /* tree.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tree.png; sourceTree = "<group>"; };
 		4C124F5E224E257D006CF84A /* tigger.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tigger.png; sourceTree = "<group>"; };
 		4C124F5F224E2598006CF84A /* stb_image.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stb_image.c; sourceTree = "<group>"; };
-		4C87F2912279E0F4000977D2 /* screenshot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot.png; sourceTree = "<group>"; };
 		4CA0F17D22730448006CB85C /* negy.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negy.jpg; sourceTree = "<group>"; };
 		4CA0F17E22730448006CB85C /* posz512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = posz512.jpg; sourceTree = "<group>"; };
 		4CA0F17F22730448006CB85C /* negy512.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = negy512.jpg; sourceTree = "<group>"; };
@@ -83,7 +82,6 @@
 		4C124F4E224E24AE006CF84A /* Meshes */ = {
 			isa = PBXGroup;
 			children = (
-				4C87F2912279E0F4000977D2 /* screenshot.png */,
 				4CA0F18522730449006CB85C /* negx.jpg */,
 				4CA0F18222730449006CB85C /* negx512.jpg */,
 				4CA0F17D22730448006CB85C /* negy.jpg */,
