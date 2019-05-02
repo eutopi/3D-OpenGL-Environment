@@ -1809,44 +1809,50 @@ public:
         
         envShader = new EnvironmentShader();
         
-        vec3 ka = vec3(0.1, 0.1, 0.1);
-        vec3 kd = vec3(0.6, 0.6, 0.6);
-        vec3 ks = vec3(0.3, 0.3, 0.3);
-        float shininess = 50;
+        vec3 diffuse_ka = vec3(0.1, 0.1, 0.1);
+        vec3 diffuse_kd = vec3(0.9, 0.9, 0.9);
+        vec3 diffuse_ks = vec3(0.0, 0.0, 0.0);
+        float diffuse_shininess = 0;
+
+        
+        vec3 specular_ka = vec3(0.1, 0.1, 0.1);
+        vec3 specular_kd = vec3(0.6, 0.6, 0.6);
+        vec3 specular_ks = vec3(0.3, 0.3, 0.3);
+        float specular_shininess = 50;
 
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.png"));
-        materials.push_back(new Material(reflectiveShader, ka, kd, ks, shininess, textures[0], environmentMap));
+        materials.push_back(new Material(meshShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[0]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.obj"));
         meshes.push_back(new Mesh(geometries[0], materials[0]));
         Object* object = new AvatarObject(meshes[0], vec3(0.0, -1.0, 0.0), vec3(0.05, 0.05, 0.05), -60.0);
         objects.push_back(object);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[1]));
+        materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[1]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.obj"));
         meshes.push_back(new Mesh(geometries[1], materials[1]));
-        Object* object2 = new BackgroundObject(meshes[1], vec3(-0.5, -0.5, -0.1), vec3(0.015, 0.015, 0.015), -60.0);
+        Object* object2 = new BackgroundObject(meshes[1], vec3(-0.5, -0.5, 1), vec3(0.015, 0.015, 0.015), -60.0);
         objects.push_back(object2);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[2]));
+        materials.push_back(new Material(meshShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[2]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.obj"));
         meshes.push_back(new Mesh(geometries[2], materials[2]));
         Object* object3 = new BackgroundObject(meshes[2], vec3(-1, -0.8, 4), vec3(0.03, 0.03, 0.03), 120.0);
         objects.push_back(object3);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/balloon/balloon.png"));
-        materials.push_back(new Material(meshShader, ka, kd, ks, shininess, textures[3]));
+        materials.push_back(new Material(meshShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[3]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/balloon/balloon.obj"));
         meshes.push_back(new Mesh(geometries[3], materials[3]));
         Object* object4 = new BackgroundObject(meshes[3], vec3(-3, 2, 7), vec3(0.1, 0.1, 0.1), 0);
         objects.push_back(object4);
         
-        environment = new Environment(envShader, environmentMap);
+        //environment = new Environment(envShader, environmentMap);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(infiniteShader, ka, kd, ks, shininess, textures[4]));
+        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[4]));
         geometries.push_back(new InfiniteTexturedQuad());
         meshes.push_back(new Mesh(geometries[4], materials[4]));
         Object* object5 = new BackgroundObject(meshes[4], vec3(0, -1, 0));
@@ -1880,7 +1886,7 @@ public:
         for(int i = 0; i < objects.size(); i++){
             objects[i]->Draw();
         }
-        environment->Draw();
+        //environment->Draw();
         
     }
     
