@@ -1399,11 +1399,9 @@ public:
 class Camera {
     vec3  wEye, wLookat, wVup;
     float fov, asp, fp, bp;
+    
     vec3 velocity;
-    /**float force = 1;
-    float speed = 0.6;
-    float invMass = 0.3;
-    float acceleration;**/
+    float angularVelocity;
     
 public:
     Camera()
@@ -1416,40 +1414,9 @@ public:
     
     void SetAspectRatio(float a) { asp = a; }
     
-    void Control() {
-        velocity = (wLookat - wEye).normalize() * 5;
-    }
-    
-    void MoveHelicam(vec3 pos, float orient, float dt) {
-        //force = force + 4*dt;
-        //acceleration = force*invMass;
-        //speed = speed - acceleration * dt;
-        
-        float radians = orient * (M_PI/180);
-        wEye = pos + vec3(2*cosf(radians), 2, 2*sinf(radians));
-        wLookat = pos + vec3(0, 1.5, 0);
-    }
-    
-    void Move(float dt) {
-        Control();
-        if (keyboardState['i']) {
-            wEye = wEye + (velocity * dt);
-        }
-        if (keyboardState['k']) {
-            wEye = wEye - (velocity * dt);
-        }
-        if (keyboardState['j']) {
-            vec3 ahead = (wLookat - wEye).normalize();
-            vec3 right = cross(wVup, ahead).normalize();
-            vec3 ahead_prime = ahead*cosf(0.5 * dt) + right*sinf(0.5 * dt);
-            wLookat = wEye + ahead_prime * (wLookat - wEye).length();
-        }
-        if (keyboardState['l']) {
-            vec3 ahead = (wLookat - wEye).normalize();
-            vec3 right = cross(wVup, ahead).normalize();
-            vec3 ahead_prime = ahead*cosf(-0.5 * dt) + right*sinf(-0.5 * dt);
-            wLookat = wEye + ahead_prime * (wLookat - wEye).length();
-        }
+    vec3 GetEyePosition()
+    {
+        return wEye;
     }
     
     mat4 GetViewMatrix()
@@ -1491,6 +1458,7 @@ public:
                     w.x,  w.y,  w.z,  0.0f,
                     0.0f, 0.0f, 0.0f, 1.0f );
     }
+    
     mat4 GetInverseProjectionMatrix() {
         float sy = 1/tan(fov/2);
         return mat4(
@@ -1500,13 +1468,73 @@ public:
                     0.0f,        0.0f,        -1.0f,        (fp + bp) / 2.0 / fp / bp);
     }
     
-    void UploadAttributes(Shader *shader) {
+    vec3 GetAhead()
+    {
+        return (wLookat - wEye).normalize();
+    }
+    
+    void Control()
+    {
+        if(keyboardState['w'])
+        {
+            velocity = GetAhead() * 2.0;
+            return;
+        }
+        
+        if(keyboardState['s'])
+        {
+            velocity = GetAhead() * (-2.0);
+            return;
+        }
+        
+        if(keyboardState['d'])
+        {
+            angularVelocity = 20.0;
+            return;
+        }
+        
+        if(keyboardState['a'])
+        {
+            angularVelocity = -20.0;
+            return;
+        }
+        
+        angularVelocity = 0.0;
+        velocity = vec3(0.0, 0.0, 0.0);
+    }
+    
+    void Move(float dt)
+    {
+        wEye = wEye + velocity * dt;
+        wLookat = wLookat + velocity * dt;
+        
+        vec3 w = (wLookat - wEye);
+        float l = w.length();
+        w = w.normalize();
+        vec3 v = wVup.normalize();
+        vec3 u = cross(w, v);
+        
+        float alpha = (angularVelocity * dt) * M_PI / 180.0;
+        
+        wLookat = wEye + (w * cos(alpha) + u * sin(alpha)) * l;
+    }
+    
+    void MoveHelicam(vec3 pos, float orient, float dt) {
+        //force = force + 4*dt;
+        //acceleration = force*invMass;
+        //speed = speed - acceleration * dt;
+        
+        float radians = orient * (M_PI/180);
+        wEye = pos + vec3(2*cosf(radians), 2, 2*sinf(radians));
+        wLookat = pos + vec3(0, 1.5, 0);
+    }
+    
+    void UploadAttributes(Shader *shader)
+    {
         shader->UploadEyePosition(wEye);
     }
     
-    vec3 GetEyePosition() {
-        return wEye;
-    }
+    
 };
 
 Camera camera;
@@ -1589,8 +1617,9 @@ public:
         
         UploadAttributes(shadowShader);
         
-        vec3 source = vec3(0, 100, 0);
-        light.SetPointLightSource(source);
+        vec3 source = vec3(9, 20, 9);
+        light.SetDirectionalLightSource(source);
+        //light.SetPointLightSource(source);
         light.UploadAttributes(shadowShader);
         
         camera.UploadAttributes(shadowShader);
@@ -1822,7 +1851,7 @@ public:
 
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.png"));
-        materials.push_back(new Material(meshShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[0]));
+        materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[0]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.obj"));
         meshes.push_back(new Mesh(geometries[0], materials[0]));
         Object* object = new AvatarObject(meshes[0], vec3(0.0, -1.0, 0.0), vec3(0.05, 0.05, 0.05), -60.0);
@@ -1832,7 +1861,7 @@ public:
         materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[1]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.obj"));
         meshes.push_back(new Mesh(geometries[1], materials[1]));
-        Object* object2 = new BackgroundObject(meshes[1], vec3(-0.5, -0.5, 1), vec3(0.015, 0.015, 0.015), -60.0);
+        Object* object2 = new BackgroundObject(meshes[1], vec3(-2, -0.5, 0.5), vec3(0.06, 0.06, 0.06), -60.0);
         objects.push_back(object2);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
@@ -1855,7 +1884,7 @@ public:
         materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[4]));
         geometries.push_back(new InfiniteTexturedQuad());
         meshes.push_back(new Mesh(geometries[4], materials[4]));
-        Object* object5 = new BackgroundObject(meshes[4], vec3(0, -1, 0));
+        Object* object5 = new BackgroundObject(meshes[4], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
         objects.push_back(object5);
     }
     
@@ -1949,6 +1978,7 @@ void onIdle( ) {
     double dt = t - lastTime;
     lastTime = t;
     
+    camera.Control();
     camera.MoveHelicam(scene.GetAvatar()->GetPosition(), scene.GetAvatar()->GetOrientation(), dt);
     //camera.Move(dt);
     scene.Move(dt);
