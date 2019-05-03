@@ -35,6 +35,7 @@
 		4C404249227AF5CF00543BF6 /* environment */ = {isa = PBXFileReference; lastKnownFileType = folder; path = environment; sourceTree = "<group>"; };
 		4C40424A227AF5DD00543BF6 /* tree */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tree; sourceTree = "<group>"; };
 		4C40424B227AF5E500543BF6 /* tigger */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tigger; sourceTree = "<group>"; };
+		4C9F5931227C78620014ED13 /* chevy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = chevy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +71,7 @@
 		4C124F4E224E24AE006CF84A /* Meshes */ = {
 			isa = PBXGroup;
 			children = (
+				4C9F5931227C78620014ED13 /* chevy */,
 				4C40424B227AF5E500543BF6 /* tigger */,
 				4C40424A227AF5DD00543BF6 /* tree */,
 				4C404249227AF5CF00543BF6 /* environment */,

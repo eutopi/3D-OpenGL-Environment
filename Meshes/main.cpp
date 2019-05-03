@@ -2061,7 +2061,7 @@ public:
         objects.push_back(object);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(marbleShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[1]));
+        materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[1]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.obj"));
         meshes.push_back(new Mesh(geometries[1], materials[1]));
         Object* object2 = new BackgroundObject(meshes[1], vec3(-2, -0.5, 0.5), vec3(0.06, 0.06, 0.06), -60.0);
@@ -2080,15 +2080,22 @@ public:
         meshes.push_back(new Mesh(geometries[3], materials[3]));
         Object* object4 = new BackgroundObject(meshes[3], vec3(-3, 2, 7), vec3(0.1, 0.1, 0.1), 0);
         objects.push_back(object4);
-        
+
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
+        materials.push_back(new Material(marbleShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[4]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/chevy/wheel.obj"));
+        meshes.push_back(new Mesh(geometries[4], materials[4]));
+        Object* object5 = new BackgroundObject(meshes[4], vec3(0.0, -1.0, 4.0), vec3(0.3, 0.3, 0.3), 20);
+        objects.push_back(object5);
+
         //environment = new Environment(envShader, environmentMap);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[4]));
+        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[5]));
         geometries.push_back(new InfiniteTexturedQuad());
-        meshes.push_back(new Mesh(geometries[4], materials[4]));
-        Object* object5 = new BackgroundObject(meshes[4], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
-        objects.push_back(object5);
+        meshes.push_back(new Mesh(geometries[5], materials[5]));
+        Object* object6 = new BackgroundObject(meshes[5], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
+        objects.push_back(object6);
     }
     
     ~Scene()
