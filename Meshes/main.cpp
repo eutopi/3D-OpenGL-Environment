@@ -141,6 +141,8 @@ struct vec2
         return vec2(x * s, y * s);
     }
     
+    float length() { return sqrt(x * x + y * y); }
+    
 };
 
 // 3D point in Cartesian coordinates
@@ -1723,7 +1725,7 @@ public:
         //force = force + 4*dt;
         //acceleration = force*invMass;
         //speed = speed - acceleration * dt;
-        
+    
         float radians = orient * (M_PI/180);
         wEye = pos + vec3(2*cosf(radians), 2, 2*sinf(radians));
         wLookat = pos + vec3(0, 1.5, 0);
@@ -1739,7 +1741,7 @@ public:
 
 Camera camera;
 vec3 wEye = camera.GetEyePosition();
-Light light = Light(vec3(1, 1, 1), vec3(1, 1, 1), vec4(0.1, 0.1, 0.1, 0.0));//vec4(wEye.x, wEye.y, wEye.z, 0));
+Light light = Light(vec3(1, 1, 1), vec3(1, 1, 1), vec4(0.1, 0.1, 0.1, 0.0));
 
 class Environment : public Geometry
 {
@@ -1791,7 +1793,7 @@ class Object{
     float orientation;
     
 public:
-    Object(Mesh *m, vec3 position = vec3(0.0, 0.0, 0.0), vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) : position(position), scaling(scaling), orientation(orientation)
+    Object(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) : position(position), scaling(scaling), orientation(orientation)
     {
         shader = m->GetShader();
         mesh = m;
@@ -1801,6 +1803,7 @@ public:
     virtual vec3& GetPosition() { return position; }
     virtual float GetOrientation() { return orientation; }
     virtual void Move(float dt) {}
+    virtual void PushedBy(float dt, Object* o) {}
     
     void Draw()
     {
@@ -1839,7 +1842,7 @@ class AvatarObject: public Object
     float orientation;
     
 public:
-    AvatarObject(Mesh *m, vec3 position = vec3(0.0, 0.0, 0.0), vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
+    AvatarObject(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
     Object(m, position, scaling, orientation), position(position), scaling(scaling), orientation(orientation)
     {
         shader = m->GetShader();
@@ -1932,7 +1935,7 @@ class BackgroundObject: public Object
     float orientation;
     
 public:
-    BackgroundObject(Mesh *m, vec3 position = vec3(0.0, 0.0, 0.0), vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
+    BackgroundObject(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
     Object(m, position, scaling, orientation), position(position), scaling(scaling), orientation(orientation)
     {
         shader = m->GetShader();
@@ -1992,6 +1995,91 @@ public:
     }
     
     vec3& GetPosition() { return position; }
+};
+
+class RoundObject: public Object
+{
+    Shader* shader;
+    Mesh *mesh;
+    vec3 position;
+    vec3 scaling;
+    float orientation;
+    
+public:
+    RoundObject(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
+    Object(m, position, scaling, orientation), position(position), scaling(scaling), orientation(orientation)
+    {
+        shader = m->GetShader();
+        mesh = m;
+    }
+    
+    void UploadAttributes(Shader* s)
+    {
+        mat4 T = mat4(
+                      1.0,            0.0,            0.0,            0.0,
+                      0.0,            1.0,            0.0,            0.0,
+                      0.0,            0.0,            1.0,            0.0,
+                      position.x,        position.y,        position.z,        1.0);
+        
+        mat4 InvT = mat4(
+                         1.0,            0.0,            0.0,            0.0,
+                         0.0,            1.0,            0.0,            0.0,
+                         0.0,            0.0,            1.0,            0.0,
+                         -position.x,    -position.y,    -position.z,    1.0);
+        
+        mat4 S = mat4(
+                      scaling.x,        0.0,            0.0,            0.0,
+                      0.0,            scaling.y,        0.0,            0.0,
+                      0.0,            0.0,            scaling.z,        0.0,
+                      0.0,            0.0,            0.0,            1.0);
+        
+        mat4 InvS = mat4(
+                         1.0/scaling.x,    0.0,            0.0,            0.0,
+                         0.0,            1.0/scaling.y,    0.0,            0.0,
+                         0.0,            0.0,            1.0/scaling.z,    0.0,
+                         0.0,            0.0,            0.0,            1.0);
+        
+        float alpha = orientation / 180.0 * M_PI;
+        
+        mat4 R = mat4(
+                      cos(alpha),        0.0,            sin(alpha),        0.0,
+                      0.0,            1.0,            0.0,            0.0,
+                      -sin(alpha),    0.0,            cos(alpha),        0.0,
+                      0.0,            0.0,            0.0,            1.0);
+        
+        mat4 InvR = mat4(
+                         cos(alpha),        0.0,            -sin(alpha),    0.0,
+                         0.0,            1.0,            0.0,            0.0,
+                         sin(alpha),        0.0,            cos(alpha),        0.0,
+                         0.0,            0.0,            0.0,            1.0);
+        
+        mat4 M = S * R * T;
+        mat4 InvM = InvT * InvR * InvS;
+        
+        mat4 MVP = M * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        mat4 VP = camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        
+        s->UploadM(M);
+        s->UploadInvM(InvM);
+        s->UploadMVP(MVP);
+        s->UploadVP(VP);
+    }
+    
+    vec3& GetPosition() { return position; }
+    
+    void PushedBy(float dt, Object* o) {
+        vec3 dist = position - o->GetPosition();
+        float push_radius = 0.5;
+        float len = vec2(dist.x, dist.z).length();
+        if (len < push_radius) {
+            float radians = o->GetOrientation() * (M_PI/180);
+            if (keyboardState['w']) {
+                position.x = position.x - dt * cos(radians);
+                position.z = position.z - dt * sin(radians);
+            }
+        }
+    }
+    
 };
 
 class Scene
@@ -2081,21 +2169,28 @@ public:
         Object* object4 = new BackgroundObject(meshes[3], vec3(-3, 2, 7), vec3(0.1, 0.1, 0.1), 0);
         objects.push_back(object4);
 
-        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(marbleShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[4]));
-        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/chevy/wheel.obj"));
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/ball/ball.png"));
+        materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[4]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/ball/ball.obj"));
         meshes.push_back(new Mesh(geometries[4], materials[4]));
-        Object* object5 = new BackgroundObject(meshes[4], vec3(0.0, -1.0, 4.0), vec3(0.3, 0.3, 0.3), 20);
+        Object* object5 = new RoundObject(meshes[4], vec3(0, -0.6, 1.3), vec3(0.2, 0.2, 0.2), 90);
         objects.push_back(object5);
+        
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/ball/ball.png"));
+        materials.push_back(new Material(marbleShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[5]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/ball/ball.obj"));
+        meshes.push_back(new Mesh(geometries[5], materials[5]));
+        Object* object6 = new RoundObject(meshes[5], vec3(-3, -0.8, 2.5), vec3(0.15, 0.15, 0.15), 90);
+        objects.push_back(object6);
 
         //environment = new Environment(envShader, environmentMap);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[5]));
+        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[6]));
         geometries.push_back(new InfiniteTexturedQuad());
-        meshes.push_back(new Mesh(geometries[5], materials[5]));
-        Object* object6 = new BackgroundObject(meshes[5], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
-        objects.push_back(object6);
+        meshes.push_back(new Mesh(geometries[6], materials[6]));
+        Object* object7 = new BackgroundObject(meshes[6], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
+        objects.push_back(object7);
     }
     
     ~Scene()
@@ -2132,6 +2227,7 @@ public:
     void Move(float dt) {
         for(int i = 0; i < objects.size(); i++){
             objects[i]->Move(dt);
+            objects[i]->PushedBy(dt, objects[0]);
         }
     }
     

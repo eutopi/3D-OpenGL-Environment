@@ -36,6 +36,8 @@
 		4C40424A227AF5DD00543BF6 /* tree */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tree; sourceTree = "<group>"; };
 		4C40424B227AF5E500543BF6 /* tigger */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tigger; sourceTree = "<group>"; };
 		4C9F5931227C78620014ED13 /* chevy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = chevy; sourceTree = "<group>"; };
+		4CDDAFD7227CCC2A00D1EFFC /* pikachu */ = {isa = PBXFileReference; lastKnownFileType = folder; path = pikachu; sourceTree = "<group>"; };
+		4CDDAFD8227CCD5C00D1EFFC /* ball */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ball; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,8 @@
 		4C124F4E224E24AE006CF84A /* Meshes */ = {
 			isa = PBXGroup;
 			children = (
+				4CDDAFD8227CCD5C00D1EFFC /* ball */,
+				4CDDAFD7227CCC2A00D1EFFC /* pikachu */,
 				4C9F5931227C78620014ED13 /* chevy */,
 				4C40424B227AF5E500543BF6 /* tigger */,
 				4C40424A227AF5DD00543BF6 /* tree */,
