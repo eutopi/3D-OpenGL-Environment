@@ -23,7 +23,7 @@ Env map without environment | Env map with environment |
 6. **Diffuse** - at least one object has texturing and diffuse (Lambertian) shading.
 7. **Shining** - at least one object has specular (diffuse + Phong-Blinn) shading.
 
-Tree with diffuse(3) shading | Tree with specular(4) shading  |
+Tree with diffuse(6) shading | Tree with specular(7) shading  |
 ------------ | ------------- | 
 <img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/3.png" alt="drawing" width="400"/> | <img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/4.png" alt="drawing" width="400"/>
 
