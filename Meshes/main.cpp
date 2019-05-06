@@ -1939,6 +1939,8 @@ public:
     virtual void Move(float dt) {}
     virtual void PushedBy(float dt, Object* o) {}
     virtual void DrawSpotlight() {}
+    virtual void Roll(float dt, Object* o, int index) {}
+    virtual void SetAheadOrientation(float orient) {}
     
     void Draw()
     {
@@ -2259,6 +2261,229 @@ public:
     
 };
 
+class CarObject: public Object
+{
+    Shader* shader;
+    Mesh *mesh;
+    vec3 position;
+    vec3 scaling;
+    float orientation;
+    float ahead_orientation = orientation;
+    
+public:
+    CarObject(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
+    Object(m, position, scaling, orientation), position(position), scaling(scaling), orientation(orientation)
+    {
+        shader = m->GetShader();
+        mesh = m;
+    }
+    
+    void UploadAttributes(Shader* s)
+    {
+        mat4 T = mat4(
+                      1.0,            0.0,            0.0,            0.0,
+                      0.0,            1.0,            0.0,            0.0,
+                      0.0,            0.0,            1.0,            0.0,
+                      position.x,        position.y,        position.z,        1.0);
+        
+        mat4 InvT = mat4(
+                         1.0,            0.0,            0.0,            0.0,
+                         0.0,            1.0,            0.0,            0.0,
+                         0.0,            0.0,            1.0,            0.0,
+                         -position.x,    -position.y,    -position.z,    1.0);
+        
+        mat4 S = mat4(
+                      scaling.x,        0.0,            0.0,            0.0,
+                      0.0,            scaling.y,        0.0,            0.0,
+                      0.0,            0.0,            scaling.z,        0.0,
+                      0.0,            0.0,            0.0,            1.0);
+        
+        mat4 InvS = mat4(
+                         1.0/scaling.x,    0.0,            0.0,            0.0,
+                         0.0,            1.0/scaling.y,    0.0,            0.0,
+                         0.0,            0.0,            1.0/scaling.z,    0.0,
+                         0.0,            0.0,            0.0,            1.0);
+        
+        float alpha = orientation / 180.0 * M_PI;
+        
+        mat4 R = mat4(
+                      cos(alpha),        0.0,            sin(alpha),        0.0,
+                      0.0,            1.0,            0.0,            0.0,
+                      -sin(alpha),    0.0,            cos(alpha),        0.0,
+                      0.0,            0.0,            0.0,            1.0);
+        
+        mat4 InvR = mat4(
+                         cos(alpha),        0.0,            -sin(alpha),    0.0,
+                         0.0,            1.0,            0.0,            0.0,
+                         sin(alpha),        0.0,            cos(alpha),        0.0,
+                         0.0,            0.0,            0.0,            1.0);
+        
+        mat4 M = S * R * T;
+        mat4 InvM = InvT * InvR * InvS;
+        
+        mat4 MVP = M * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        mat4 VP = camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        
+        s->UploadM(M);
+        s->UploadInvM(InvM);
+        s->UploadMVP(MVP);
+        s->UploadVP(VP);
+    }
+    
+    vec3& GetPosition() { return position; }
+    void SetAheadOrientation(float orient) {
+        ahead_orientation = orient;
+    }
+    
+    void Move(float dt) {
+        float radians = (ahead_orientation-90) * (M_PI/180);
+        if (keyboardState['i']) {
+            position.x = position.x - dt * cos(radians);
+            position.z = position.z - dt * sin(radians);
+        }
+        if (keyboardState['k']) {
+            position.x = position.x + dt * cos(radians);
+            position.z = position.z + dt * sin(radians);
+        }/**
+        if (keyboardState['j']) {
+            orientation = orientation - dt*10;
+        }
+        if (keyboardState['l']) {
+            orientation = orientation + dt*10;
+        }**/
+    }
+    
+};
+
+class WheelObject: public Object
+{
+    Shader* shader;
+    Mesh *mesh;
+    vec3 position;
+    vec3 scaling;
+    float orientation;
+    float rollAngle = 0;
+    vec3 u = vec3(0, 0, 0);
+    
+public:
+    WheelObject(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
+    Object(m, position, scaling, orientation), position(position), scaling(scaling), orientation(orientation)
+    {
+        shader = m->GetShader();
+        mesh = m;
+    }
+    
+    void UploadAttributes(Shader* s)
+    {
+        mat4 T = mat4(
+                      1.0,            0.0,            0.0,            0.0,
+                      0.0,            1.0,            0.0,            0.0,
+                      0.0,            0.0,            1.0,            0.0,
+                      position.x,        position.y,        position.z,        1.0);
+        
+        mat4 InvT = mat4(
+                         1.0,            0.0,            0.0,            0.0,
+                         0.0,            1.0,            0.0,            0.0,
+                         0.0,            0.0,            1.0,            0.0,
+                         -position.x,    -position.y,    -position.z,    1.0);
+        
+        mat4 S = mat4(
+                      scaling.x,        0.0,            0.0,            0.0,
+                      0.0,            scaling.y,        0.0,            0.0,
+                      0.0,            0.0,            scaling.z,        0.0,
+                      0.0,            0.0,            0.0,            1.0);
+        
+        mat4 InvS = mat4(
+                         1.0/scaling.x,    0.0,            0.0,            0.0,
+                         0.0,            1.0/scaling.y,    0.0,            0.0,
+                         0.0,            0.0,            1.0/scaling.z,    0.0,
+                         0.0,            0.0,            0.0,            1.0);
+        
+        float alpha = orientation / 180.0 * M_PI;
+        
+        mat4 R = mat4(
+                      cos(alpha),        0.0,            sin(alpha),        0.0,
+                      0.0,            1.0,            0.0,            0.0,
+                      -sin(alpha),    0.0,            cos(alpha),        0.0,
+                      0.0,            0.0,            0.0,            1.0);
+        
+        mat4 InvR = mat4(
+                         cos(alpha),        0.0,            -sin(alpha),    0.0,
+                         0.0,            1.0,            0.0,            0.0,
+                         sin(alpha),        0.0,            cos(alpha),        0.0,
+                         0.0,            0.0,            0.0,            1.0);
+        
+        float b = rollAngle / 180.0 * M_PI;
+        
+        mat4 rollM = mat4(
+                          cos(b)+pow(u.x,2)*(1-cos(b)), u.x*u.y*(1-cos(b))-u.z*sin(b), u.x*u.z*(1-cos(b))+u.y*sin(b), 0.0,
+                          u.y*u.x*(1-cos(b))+u.z*sin(b), cos(b)+pow(u.y,2)*(1-cos(b)), u.y*u.z*(1-cos(b))-u.x*sin(b), 0.0,
+                          u.z*u.x*(1-cos(b))-u.y*sin(b), u.z*u.y*(1-cos(b))+u.x*sin(b), cos(b)+pow(u.z,2)*(1-cos(b)), 0.0,
+                          0.0, 0.0, 0.0, 1.0);
+        
+        mat4 invRollM = mat4();
+        
+        double m[16];
+        double invOut[16];
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<4; j++) {
+                m[i+j*4] = rollM.m[i][j];
+            }
+        }
+        
+        if(gluInvertMatrix(m, invOut)) {
+            for (int i=0; i<4; i++) {
+                for (int j=0; j<4; j++) {
+                    invRollM.m[i][j] = invOut[i+j*4];
+                }
+            }
+        }
+        
+        mat4 M = S * R * rollM * T;
+        mat4 InvM = InvT * invRollM * InvR * InvS;
+        
+        mat4 MVP = M * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        mat4 VP = camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        
+        s->UploadM(M);
+        s->UploadInvM(InvM);
+        s->UploadMVP(MVP);
+        s->UploadVP(VP);
+    }
+    
+    vec3& GetPosition() { return position; }
+    
+    void Roll(float dt, Object* o, int index) {
+        if (index == 7) {
+            position = o->GetPosition() + vec3(1, -0.3, -0.6);
+        }else if (index == 8) {
+            position = o->GetPosition() + vec3(-1.25, -0.3, -0.6);
+        }else if (index == 9) {
+            position = o->GetPosition() + vec3(1, -0.3, 0.6);
+        }else {
+            position = o->GetPosition() + vec3(-1.25, -0.3, 0.6);
+        }
+        float radians = orientation * (M_PI/180);
+        u = (vec3(position.x - 20 * cos(radians), position.y, position.z - 20 * sin(radians))
+                      - position).normalize();
+        if (keyboardState['i']) {
+            o->SetAheadOrientation(orientation);
+            rollAngle = rollAngle + 100*dt;
+        }
+        if (keyboardState['k']) {
+            o->SetAheadOrientation(orientation);
+            rollAngle = rollAngle - 100*dt;
+        }
+        if (keyboardState['j']) {
+            orientation = orientation - dt*50;
+        }
+        if (keyboardState['l']) {
+            orientation = orientation + dt*50;
+        }
+    }
+    
+};
+
 class Scene
 {
     MeshShader *meshShader;
@@ -2362,15 +2587,42 @@ public:
         meshes.push_back(new Mesh(geometries[5], materials[5]));
         Object* object6 = new RoundObject(meshes[5], vec3(-3, -0.8, 2.5), vec3(0.15, 0.15, 0.15), 90);
         objects.push_back(object6);
+        
+        
+        vec3 carpos = vec3(2, -0.3, 3);
+        textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/chevy/chevy.png"));
+        materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[6]));
+        geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/chevy/chassis.obj"));
+        meshes.push_back(new Mesh(geometries[6], materials[6]));
+        Object* object7 = new CarObject(meshes[6], carpos, vec3(0.09, 0.09, 0.09), 90);
+        objects.push_back(object7);
 
+        for (int i=0; i<4; i++) {
+            textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/chevy/chevy.png"));
+            materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[7+i]));
+            geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/chevy/wheel.obj"));
+            meshes.push_back(new Mesh(geometries[7+i], materials[7+i]));
+        }
+        
+        //vec3 pos = carpos + vec3(1*cos(90), -0.3, -0.6*sin(90));
+        
+        Object* object8 = new WheelObject(meshes[7], carpos + vec3(1, -0.3, -0.6), vec3(0.09, 0.09, 0.09), 90);
+        objects.push_back(object8);
+        Object* object9 = new WheelObject(meshes[8], carpos + vec3(-1.25, -0.3, -0.6), vec3(0.09, 0.09, 0.09), 90);
+        objects.push_back(object9);
+        Object* object10 = new WheelObject(meshes[9], carpos + vec3(1, -0.3, 0.6), vec3(0.09, 0.09, 0.09), 90);
+        objects.push_back(object10);
+        Object* object11 = new WheelObject(meshes[10], carpos + vec3(-1.25, -0.3, 0.6), vec3(0.09, 0.09, 0.09), 90);
+        objects.push_back(object11);
+        
         //environment = new Environment(envShader, environmentMap);
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tree/tree.png"));
-        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[6]));
+        materials.push_back(new Material(infiniteShader, specular_ka, specular_kd, specular_ks, specular_shininess, textures[11]));
         geometries.push_back(new InfiniteTexturedQuad());
-        meshes.push_back(new Mesh(geometries[6], materials[6]));
-        Object* object7 = new BackgroundObject(meshes[6], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
-        objects.push_back(object7);
+        meshes.push_back(new Mesh(geometries[11], materials[11]));
+        Object* object12 = new BackgroundObject(meshes[11], vec3(0.0, -1.0, 0.0), vec3(10.0, 1.0, 10.0));
+        objects.push_back(object12);
     }
     
     ~Scene()
@@ -2399,7 +2651,7 @@ public:
         }
         for(int i = 0; i < objects.size(); i++){
             objects[i]->Draw();
-            //objects[0]->DrawSpotlight();
+            objects[0]->DrawSpotlight();
         }
         //environment->Draw();
         
@@ -2407,6 +2659,7 @@ public:
     
     void Move(float dt) {
         for(int i = 0; i < objects.size(); i++){
+            objects[i]->Roll(dt, objects[6], i);
             objects[i]->Move(dt);
             objects[i]->PushedBy(dt, objects[0]);
         }
