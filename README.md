@@ -3,21 +3,22 @@
 The goal of this project is to simulate a realistic walk by an avatar, represented by the beloved cartoon character Tigger, walking through an infinitely-tiled world. Some topics explored include mesh loading, VS transformations with 3D camera, texturing, and various shading techniques. 
 
 <p align="center"><img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/banner.png" alt="drawing" width="500"/></p>
+<p align="center"><i>This is Tigger staring wistfully into the sunset :'( </i></p>
 
 **Controls**
 - `WASD` to move the avatar
 - `IKJL` to move the car
 
-## Features 
-1. **Ground Zero** - infinite ground plane with some tileable texture repeated on it indefinitely.
-2. **Pitch Black** - shadows of objects should appear on the ground. These shadows are essentially objects in black, flattened to the ground along a global, non-vertical light direction, but slightly above the ground plane.
-3. **Environment Mapping** - the background is reflected on all the objects in the game world.
+## Features
+1. **Helicam** - the camera is tied to a helicopter-like, physically simulated (but not displayed) object that is above and behind the avatar, oriented towards the avatar. 
+2. **Ground Zero** - infinite ground plane with some tileable texture repeated on it indefinitely.
+3. **Pitch Black** - shadows of objects should appear on the ground. These shadows are essentially objects in black, flattened to the ground along a global, non-vertical light direction, but slightly above the ground plane.
+4. **Environment Mapping** - the background is reflected on all the objects in the game world.
 
 Env map without environment | Env map with environment |
 ------------ | ------------- | 
 <img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/1.png" alt="drawing" width="400"/> | <img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/2.png" alt="drawing" width="400"/>
 
-4. **Helicam** - the camera is tied to a helicopter-like, physically simulated (but not displayed) object that is above and behind the avatar, oriented towards the avatar. 
 5. **Sunshine** - at least one non-vertical directional light source illuminates the game world.
 6. **Diffuse** - at least one object has texturing and diffuse (Lambertian) shading.
 7. **Shining** - at least one object has specular (diffuse + Phong-Blinn) shading.
