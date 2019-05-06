@@ -1,3 +1,10 @@
+//
+//  main.cpp
+//  3D Environment
+//
+//  Created by Tongyu Zhou on 4/23/19.
+//  Copyright © 2019 AIT. All rights reserved.
+//
 
 #define _USE_MATH_DEFINES
 #include <stdio.h>
