@@ -1804,6 +1804,7 @@ public:
     virtual float GetOrientation() { return orientation; }
     virtual void Move(float dt) {}
     virtual void PushedBy(float dt, Object* o) {}
+    virtual void DrawSpotlight() {}
     
     void Draw()
     {
@@ -1899,6 +1900,18 @@ public:
         s->UploadInvM(InvM);
         s->UploadMVP(MVP);
         s->UploadVP(VP);
+    }
+    
+    void DrawSpotlight() {
+        shader->Run();
+        UploadAttributes(shader);
+        
+        vec3 source = position+vec3(0, 2, 0);
+        light.SetPointLightSource(source);
+        light.UploadAttributes(shader);
+        
+        camera.UploadAttributes(shader);
+        mesh->Draw();
     }
     
     vec3& GetPosition() { return position; }
@@ -2004,6 +2017,8 @@ class RoundObject: public Object
     vec3 position;
     vec3 scaling;
     float orientation;
+    float rollAngle = 0;
+    vec3 u = vec3(0, 0, 0);
     
 public:
     RoundObject(Mesh *m, vec3 position, vec3 scaling = vec3(1.0, 1.0, 1.0), float orientation = 0.0) :
@@ -2053,7 +2068,17 @@ public:
                          sin(alpha),        0.0,            cos(alpha),        0.0,
                          0.0,            0.0,            0.0,            1.0);
         
-        mat4 M = S * R * T;
+        float b = rollAngle / 180.0 * M_PI;
+        
+        mat4 rollM = mat4(
+            cos(b)+pow(u.x,2)*(1-cos(b)), u.x*u.y*(1-cos(b))-u.z*sin(b), u.x*u.z*(1-cos(b))+u.y*sin(b), 0.0,
+            u.y*u.x*(1-cos(b))+u.z*sin(b), cos(b)+pow(u.y,2)*(1-cos(b)), u.y*u.z*(1-cos(b))-u.x*sin(b), 0.0,
+            u.z*u.x*(1-cos(b))-u.y*sin(b), u.z*u.y*(1-cos(b))+u.x*sin(b), cos(b)+pow(u.z,2)*(1-cos(b)), 0.0,
+                         0.0, 0.0, 0.0, 1.0);
+        
+        mat4 invRollM = mat4();
+        
+        mat4 M = S * R * rollM * T;
         mat4 InvM = InvT * InvR * InvS;
         
         mat4 MVP = M * camera.GetViewMatrix() * camera.GetProjectionMatrix();
@@ -2068,15 +2093,17 @@ public:
     vec3& GetPosition() { return position; }
     
     void PushedBy(float dt, Object* o) {
-        vec3 dist = position - o->GetPosition();
+        vec3 dist = o->GetPosition() - position;
         float push_radius = 0.5;
         float len = vec2(dist.x, dist.z).length();
-        if (len < push_radius) {
+        if (len < push_radius && keyboardState['w']) {
+            // ball roll
+            rollAngle = rollAngle - 100*dt;
+            u = cross(vec3(dist.x, 0, dist.z).normalize(), vec3(0, 1, 0));
+            // ball position
             float radians = o->GetOrientation() * (M_PI/180);
-            if (keyboardState['w']) {
-                position.x = position.x - dt * cos(radians);
-                position.z = position.z - dt * sin(radians);
-            }
+            position.x = position.x - dt * cos(radians);
+            position.z = position.z - dt * sin(radians);
         }
     }
     
@@ -2085,6 +2112,7 @@ public:
 class Scene
 {
     MeshShader *meshShader;
+    MeshShader *spotlightShader;
     ReflectiveShader *reflectiveShader;
     InfiniteQuadShader *infiniteShader;
     ShadowShader *shadowShader;
@@ -2104,6 +2132,7 @@ public:
     Scene()
     {
         meshShader = 0;
+        spotlightShader = 0;
         reflectiveShader = 0;
         infiniteShader = 0;
         shadowShader = 0;
@@ -2115,6 +2144,7 @@ public:
     void Initialize()
     {
         meshShader = new MeshShader();
+        spotlightShader = new MeshShader();
         reflectiveShader = new ReflectiveShader();
         infiniteShader = new InfiniteQuadShader();
         shadowShader = new ShadowShader();
@@ -2142,7 +2172,7 @@ public:
 
         
         textures.push_back(new Texture("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.png"));
-        materials.push_back(new Material(meshShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[0]));
+        materials.push_back(new Material(spotlightShader, diffuse_ka, diffuse_kd, diffuse_ks, diffuse_shininess, textures[0]));
         geometries.push_back(new PolygonalMesh("/Users/Tongyu/Documents/AIT_Budapest/Graphics/Meshes/Meshes/tigger/tigger.obj"));
         meshes.push_back(new Mesh(geometries[0], materials[0]));
         Object* object = new AvatarObject(meshes[0], vec3(0.0, -1.0, 0.0), vec3(0.05, 0.05, 0.05), -60.0);
@@ -2219,6 +2249,7 @@ public:
         }
         for(int i = 0; i < objects.size(); i++){
             objects[i]->Draw();
+            //objects[0]->DrawSpotlight();
         }
         //environment->Draw();
         
