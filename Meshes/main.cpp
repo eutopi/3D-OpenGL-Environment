@@ -67,7 +67,12 @@ struct mat4
 {
     float m[4][4];
 public:
-    mat4() {}
+    mat4() {
+        m[0][0] = 0; m[0][1] = 0; m[0][2] = 0; m[0][3] = 0;
+        m[1][0] = 0; m[1][1] = 0; m[1][2] = 0; m[1][3] = 0;
+        m[2][0] = 0; m[2][1] = 0; m[2][2] = 0; m[2][3] = 0;
+        m[3][0] = 0; m[3][1] = 0; m[3][2] = 0; m[3][3] = 0;
+    }
     mat4(float m00, float m01, float m02, float m03,
          float m10, float m11, float m12, float m13,
          float m20, float m21, float m22, float m23,
@@ -92,6 +97,7 @@ public:
         }
         return result;
     }
+    
     operator float*() { return &m[0][0]; }
 };
 
@@ -174,7 +180,135 @@ vec3 cross(const vec3& a, const vec3& b)
     return vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x );
 }
 
-
+bool gluInvertMatrix(const double m[16], double invOut[16])
+{
+    double inv[16], det;
+    int i;
+    
+    inv[0] = m[5]  * m[10] * m[15] -
+    m[5]  * m[11] * m[14] -
+    m[9]  * m[6]  * m[15] +
+    m[9]  * m[7]  * m[14] +
+    m[13] * m[6]  * m[11] -
+    m[13] * m[7]  * m[10];
+    
+    inv[4] = -m[4]  * m[10] * m[15] +
+    m[4]  * m[11] * m[14] +
+    m[8]  * m[6]  * m[15] -
+    m[8]  * m[7]  * m[14] -
+    m[12] * m[6]  * m[11] +
+    m[12] * m[7]  * m[10];
+    
+    inv[8] = m[4]  * m[9] * m[15] -
+    m[4]  * m[11] * m[13] -
+    m[8]  * m[5] * m[15] +
+    m[8]  * m[7] * m[13] +
+    m[12] * m[5] * m[11] -
+    m[12] * m[7] * m[9];
+    
+    inv[12] = -m[4]  * m[9] * m[14] +
+    m[4]  * m[10] * m[13] +
+    m[8]  * m[5] * m[14] -
+    m[8]  * m[6] * m[13] -
+    m[12] * m[5] * m[10] +
+    m[12] * m[6] * m[9];
+    
+    inv[1] = -m[1]  * m[10] * m[15] +
+    m[1]  * m[11] * m[14] +
+    m[9]  * m[2] * m[15] -
+    m[9]  * m[3] * m[14] -
+    m[13] * m[2] * m[11] +
+    m[13] * m[3] * m[10];
+    
+    inv[5] = m[0]  * m[10] * m[15] -
+    m[0]  * m[11] * m[14] -
+    m[8]  * m[2] * m[15] +
+    m[8]  * m[3] * m[14] +
+    m[12] * m[2] * m[11] -
+    m[12] * m[3] * m[10];
+    
+    inv[9] = -m[0]  * m[9] * m[15] +
+    m[0]  * m[11] * m[13] +
+    m[8]  * m[1] * m[15] -
+    m[8]  * m[3] * m[13] -
+    m[12] * m[1] * m[11] +
+    m[12] * m[3] * m[9];
+    
+    inv[13] = m[0]  * m[9] * m[14] -
+    m[0]  * m[10] * m[13] -
+    m[8]  * m[1] * m[14] +
+    m[8]  * m[2] * m[13] +
+    m[12] * m[1] * m[10] -
+    m[12] * m[2] * m[9];
+    
+    inv[2] = m[1]  * m[6] * m[15] -
+    m[1]  * m[7] * m[14] -
+    m[5]  * m[2] * m[15] +
+    m[5]  * m[3] * m[14] +
+    m[13] * m[2] * m[7] -
+    m[13] * m[3] * m[6];
+    
+    inv[6] = -m[0]  * m[6] * m[15] +
+    m[0]  * m[7] * m[14] +
+    m[4]  * m[2] * m[15] -
+    m[4]  * m[3] * m[14] -
+    m[12] * m[2] * m[7] +
+    m[12] * m[3] * m[6];
+    
+    inv[10] = m[0]  * m[5] * m[15] -
+    m[0]  * m[7] * m[13] -
+    m[4]  * m[1] * m[15] +
+    m[4]  * m[3] * m[13] +
+    m[12] * m[1] * m[7] -
+    m[12] * m[3] * m[5];
+    
+    inv[14] = -m[0]  * m[5] * m[14] +
+    m[0]  * m[6] * m[13] +
+    m[4]  * m[1] * m[14] -
+    m[4]  * m[2] * m[13] -
+    m[12] * m[1] * m[6] +
+    m[12] * m[2] * m[5];
+    
+    inv[3] = -m[1] * m[6] * m[11] +
+    m[1] * m[7] * m[10] +
+    m[5] * m[2] * m[11] -
+    m[5] * m[3] * m[10] -
+    m[9] * m[2] * m[7] +
+    m[9] * m[3] * m[6];
+    
+    inv[7] = m[0] * m[6] * m[11] -
+    m[0] * m[7] * m[10] -
+    m[4] * m[2] * m[11] +
+    m[4] * m[3] * m[10] +
+    m[8] * m[2] * m[7] -
+    m[8] * m[3] * m[6];
+    
+    inv[11] = -m[0] * m[5] * m[11] +
+    m[0] * m[7] * m[9] +
+    m[4] * m[1] * m[11] -
+    m[4] * m[3] * m[9] -
+    m[8] * m[1] * m[7] +
+    m[8] * m[3] * m[5];
+    
+    inv[15] = m[0] * m[5] * m[10] -
+    m[0] * m[6] * m[9] -
+    m[4] * m[1] * m[10] +
+    m[4] * m[2] * m[9] +
+    m[8] * m[1] * m[6] -
+    m[8] * m[2] * m[5];
+    
+    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+    
+    if (det == 0)
+        return false;
+    
+    det = 1.0 / det;
+    
+    for (i = 0; i < 16; i++)
+        invOut[i] = inv[i] * det;
+    
+    return true;
+}
 
 class Geometry
 {
@@ -2078,8 +2212,24 @@ public:
         
         mat4 invRollM = mat4();
         
+        double m[16];
+        double invOut[16];
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<4; j++) {
+                m[i+j*4] = rollM.m[i][j];
+            }
+        }
+        
+        if(gluInvertMatrix(m, invOut)) {
+            for (int i=0; i<4; i++) {
+                for (int j=0; j<4; j++) {
+                    invRollM.m[i][j] = invOut[i+j*4];
+                }
+            }
+        }
+        
         mat4 M = S * R * rollM * T;
-        mat4 InvM = InvT * InvR * InvS;
+        mat4 InvM = InvT * invRollM * InvR * InvS;
         
         mat4 MVP = M * camera.GetViewMatrix() * camera.GetProjectionMatrix();
         mat4 VP = camera.GetViewMatrix() * camera.GetProjectionMatrix();
