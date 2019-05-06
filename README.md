@@ -1,6 +1,6 @@
 # 3D OpenGL Environment
 
-The goal of this project is to simulate a realistic walk by an avatar, represented by the beloved cartoon character Tigger, walking through an infinitely-tiled world. Some topics explored include mesh loading, VS transformations with 3D camera, texturing, and various shading techniques. 
+The goal of this project is to simulate a realistic walk by an avatar, represented by the beloved cartoon character Tigger, through an infinitely-tiled world. Some topics explored include mesh loading, VS transformations with 3D camera, texturing, and various shading techniques. 
 
 <p align="center"><img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/banner.png" alt="drawing" width="500"/></p>
 <p align="center"><i>This is Tigger staring wistfully into the sunset :'( </i></p>
