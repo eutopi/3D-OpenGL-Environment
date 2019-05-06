@@ -2,11 +2,11 @@
 
 The goal of this project is to simulate a realistic walk by an avatar, represented by the beloved cartoon character Tigger, walking through an infinitely-tiled world. Some topics explored include mesh loading, VS transformations with 3D camera, texturing, and various shading techniques. 
 
+<p align="center"><img src="https://github.com/eutopi/3D-OpenGL-Environment/blob/master/Screenshots/banner.png" alt="drawing" width="500"/></p>
+
 **Controls**
 - `WASD` to move the avatar
 - `IKJL` to move the car
-
-## Features
 
 ## Features 
 1. **Ground Zero** - infinite ground plane with some tileable texture repeated on it indefinitely.
